@@ -18,6 +18,20 @@ export default function Home() {
     timeout: 3000000
   });
 
+  const connect = async () => {
+    await arweaveWallet.connect('ACCESS_ADDRESS');
+    setMessage({
+      message: '...connecting',
+      color: 'yellow'
+    })
+
+    const wallet = await arweaveWallet.getActiveAddress();
+
+    setCurrentWallet(wallet);
+    getGifs(wallet);
+    setMessage({})
+  }
+
   const getGifs = async (wallet) => {
     const queryWallet = wallet !== undefined ? wallet : currentWallet;
     const gifs = await arweave.api.post('graphql',
@@ -67,19 +81,6 @@ export default function Home() {
     getGifs(currentWallet);
   }, [currentWallet])
 
-  const connect = async () => {
-    await arweaveWallet.connect('ACCESS_ADDRESS');
-    setMessage({
-      message: '...connecting',
-      color: 'yellow'
-    })
-
-    const wallet = await arweaveWallet.getActiveAddress();
-
-    setCurrentWallet(wallet);
-    getGifs(wallet);
-    setMessage({})
-  }
 
   const disconnect = async () => {
     await arweaveWallet.disconnect();
@@ -154,30 +155,27 @@ export default function Home() {
           <button onClick={connect}>Connect to view uploaded gifs</button>
 
         }
-        <div style={{ maxWidth: '25rem', margin: '0 auto', height: '20rem' }} className="main">
+        <div style={{ textAlign: 'center', maxWidth: '25rem', margin: '0 auto', height: '25rem' }} className="main">
           <input type="file" onChange={handleFileChange} />
-          <div>
-            {message && <p style={{ color: message.color }}>{message.message}</p>}
-            {img &&
-              <div>
-                {selectedFile && (
-                  <span>
-                    <Image src={img} width={250} height={250} alt="local preview" />
-                    <button onClick={() => uploadGif(selectedFile)}>Upload GIF</button>
-                  </span>
-                )
-                }
-              </div>
-            }
-          </div>
+          {message && <p style={{ color: message.color }}>{message.message}</p>}
+          {img &&
+            <div>
+              {selectedFile && (
+                <div>
+                  <Image src={img} width={250} height={250} alt="local preview" /><br />
+                  <p><button onClick={() => uploadGif(selectedFile)}>Upload GIF</button></p>
+                </div>
+              )
+              }
+            </div>
+          }
         </div>
         <div>
-          <h1 style={{ textAlign: 'center' }}>YourGifs</h1>
-          <div style={{ display: 'flex', overflow: 'scroll', maxWidth: '50vw', margin: '0 auto', border: '1px solid #eee' }}>
-            <button onClick={() => getGifs()}>Refresh GIF's</button>
+          {gifs && <p align="center">Gifs: {gifs.length}</p>}
+          <div style={{ display: 'flex', overflow: 'scroll', maxWidth: '40vw', margin: '0 auto', border: '1px solid #eee' }}>
             {gifs && gifs.map(gif => {
               return <div key={gif.node.id} style={{ margin: '2rem' }}>
-                <a href={`https://arweave.net/${gif.node.id}`} target="_blank">
+                <a href={`https://arweave.net/${gif.node.id}`} target="_blank" rel="noreferrer">
                   <img src={`https://arweave.net/${gif.node.id}`} style={{ maxWidth: '10rem' }} />
                 </a>
               </div>
